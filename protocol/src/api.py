@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from datetime import datetime
+from datetime  import datetime, timezone
 import json
 import os
 
@@ -28,7 +28,7 @@ def add_weight():
 
     # Create a new weight entry
     weight_entry = {
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "weight": data["weight"]
     }
 
@@ -55,12 +55,15 @@ def get_weights():
     if not os.path.exists(DATA_FILE):
         return jsonify({"weights": []})
 
-    # Load and return all stored data
-    with open(DATA_FILE, "r") as f:
-        all_data = json.load(f)
-
-    return jsonify({"weights": all_data})
-
+# Load existing data if the file exists and isn't empty
+    if os.path.exists(DATA_FILE) and os.path.getsize(DATA_FILE) > 0:
+        try:
+            with open(DATA_FILE, "r") as f:
+                all_data = json.load(f)
+        except json.JSONDecodeError:
+            all_data = [] # If file is corrupted, start fresh
+    else:
+        all_data = []
 
 # Start the server (accessible via Tailscale)
 if __name__ == "__main__":
