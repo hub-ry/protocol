@@ -7,8 +7,8 @@ import os
 app = Flask(__name__)
 
 # File where all weight data is stored
-DATA_FILE = "data.json"
-
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_FILE = os.path.join(BASE_DIR, "data.json")
 
 # Health check endpoint (just to see if server is running)
 @app.route("/", methods=["GET"])
@@ -48,8 +48,6 @@ def add_weight():
 
     # Send confirmation back to the client
     return jsonify({"status": "ok", "entry": weight_entry})
-
-
 # Endpoint to get all stored weight entries
 @app.route("/get_weights", methods=["GET"])
 def get_weights():
