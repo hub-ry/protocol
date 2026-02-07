@@ -7,7 +7,7 @@ import os
 app = FastAPI()
 
 class WeightEntry(BaseModel):
-  weight: int
+  weight: float
   date: str | None = None
 
 
