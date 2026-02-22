@@ -67,17 +67,17 @@
   });
 </script>
 
-<div class="current-box hover:brightness-110 transition">
+<div class="upper-box hover:brightness-110 transition">
   <div class="relative h-full p-4">
     <div class="h-[400px]">
       <canvas bind:this={chartCanvas}></canvas>
     </div>
-    <p class="absolute right-0 bottom-0 pr-2 text-gray-600">weight</p>
+    <p class="absolute right-0 bottom-0 pr-2 text-gray-600">Upper</p>
   </div>
 </div>
 
 <style>
-  .current-box {
+  .upper-box {
     flex: 1 1 340px;
     min-width: 280px;
     min-height: 60vh;

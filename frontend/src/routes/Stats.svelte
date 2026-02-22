@@ -5,72 +5,143 @@
   let firstDate = "Loading...";
   let currDate = "Loading...";
   let daysDifference = "Loading...";
+  let goalWeight = 188;
 
   onMount(async () => {
-    //const res = await fetch("http://localhost:5001/weights");
     const res = await fetch("http://100.89.197.38:5000/weights");
     weights = await res.json();
-    // Set firstDate after data loads
     if (weights.length > 0) {
       firstDate = weights[0].date;
-      currDate = new Date();
-      currDate = new Date().toLocaleDateString(); // e.g., "2/15/2026"
-      currDate = new Date().toISOString().split("T")[0]; // e.g., "2026-02-15"
+      currDate = new Date().toISOString().split("T")[0];
       const start = new Date(firstDate);
       const end = new Date(currDate);
       daysDifference = Math.floor((end - start) / (1000 * 60 * 60 * 24));
     }
   });
   $: latestWeight = weights[weights.length - 1];
-
-  function getDaysPassed() {}
 </script>
 
-<div class="stats-box hover:brightness-110 transition">
-  <div class="relative h-full">
-    <div class="grid grid-cols-2 gap-2 p-2">
-      <p class="stat-button text-yellow-400">Start-Date:</p>
-      <p class="stat-button text-yellow-400">{firstDate}</p>
-      <p class="stat-button text-yellow-400">Curr-Date:</p>
-      <p class="stat-button text-yellow-400">{currDate}</p>
-      <p class="stat-button text-yellow-400">Days Elapsed:</p>
-      <p class="stat-button text-yellow-400">{daysDifference}</p>
-      <p class="stat-button text-yellow-400">Status:</p>
-      <p class="stat-button text-yellow-400">Cutting</p>
-      <p class="stat-button text-yellow-400">current-weight:</p>
-      <p class="stat-button text-yellow-400">
-        {latestWeight?.weight || "--"} lbs
-      </p>
-      <p class="stat-button text-yellow-400">goal-weight</p>
-      <p class="stat-button text-yellow-400">200 lbs</p>
-    </div>
+<div class="stats-box">
+  <header class="stats-header">
+    <h2 class="stats-title">Stats</h2>
+  </header>
 
-    <p class="absolute right-0 bottom-0 pr-2 text-gray-600">stats</p>
+  <div class="stats-body">
+    <dl class="stat-list">
+      <div class="stat-row">
+        <dt class="stat-label">Start date</dt>
+        <dd class="stat-value">{firstDate}</dd>
+      </div>
+      <div class="stat-row">
+        <dt class="stat-label">Current date</dt>
+        <dd class="stat-value">{currDate}</dd>
+      </div>
+      <div class="stat-row">
+        <dt class="stat-label">Days elapsed</dt>
+        <dd class="stat-value">{daysDifference}</dd>
+      </div>
+      <div class="stat-row stat-row--highlight">
+        <dt class="stat-label">Current weight</dt>
+        <dd class="stat-value stat-value--primary">
+          {latestWeight?.weight ?? "—"} <span class="stat-unit">lbs</span>
+        </dd>
+      </div>
+      <div class="stat-row">
+        <dt class="stat-label">Goal weight</dt>
+        <dd class="stat-value">{goalWeight} <span class="stat-unit">lbs</span></dd>
+      </div>
+      <div class="stat-row">
+        <dt class="stat-label">Status</dt>
+        <dd class="stat-value stat-value--badge">Weight loss</dd>
+      </div>
+    </dl>
   </div>
 </div>
 
 <style>
   .stats-box {
-    border: 0.1px solid rgb(65, 68, 69);
-    background-color: rgb(34, 38, 44);
-    width: 21vw;
-    height: 50vh;
-    border-radius: 8px;
-    background: linear-gradient(
-      to bottom,
-      rgb(34, 38, 44) 10%,
-      rgb(34, 38, 44) 10%
-    );
-    box-shadow:
-      0 4px 6px rgba(0, 0, 0, 0.3),
-      0 1px 3px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    background-color: var(--card-bg);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
   }
 
-  .stat-button {
-    position: relative;
-    margin-top: 10px;
-    margin-left: 20px;
-    margin-right: 5px;
-    padding: 2px;
+  .stats-header {
+    flex-shrink: 0;
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid var(--card-border);
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  .stats-title {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--label-muted);
+  }
+
+  .stats-body {
+    flex: 1;
+    padding: 1rem;
+    min-height: 0;
+  }
+
+  .stat-list {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+    gap: 0.75rem;
+  }
+
+  .stat-row--highlight {
+    padding: 0.5rem 0;
+    margin: 0.25rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .stat-label {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--label-muted);
+  }
+
+  .stat-value {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgb(226, 232, 240);
+    text-align: right;
+  }
+
+  .stat-value--primary {
+    font-size: 1rem;
+    font-weight: 600;
+    color: rgb(234, 179, 8);
+  }
+
+  .stat-value--badge {
+    font-size: 0.75rem;
+    color: rgb(134, 239, 172);
+  }
+
+  .stat-unit {
+    font-size: 0.75em;
+    font-weight: 400;
+    color: var(--label-muted);
   }
 </style>

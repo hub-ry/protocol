@@ -1,13 +1,13 @@
 <script>
   import Current from "./Current.svelte";
   import Stats from "./Stats.svelte";
-  import Future from "./Future.svelte";
-
+  import Upper from "./Upper.svelte";
+  import Lower from "./Lower.svelte";
   import { onMount } from "svelte";
 
   let currentTime = "";
   let userName = "";
-  let mainView = "weight"; 
+  let mainView = "weight";
 
   // hardcode for now bc i am the only user
   userName = "ryan";
@@ -24,43 +24,76 @@
   }
 </script>
 
-<div class="bar hover:brightness-110 transition pl-2">
-  {currentTime}
-  <div class="pr-2">
-    user: {userName}
-  </div>
+<div class="bar hover:brightness-110 transition">
+  <span>{currentTime}</span>
+  <span>user: {userName}</span>
 </div>
 
-<div class="cards">
-  <Stats />
-  <Current />
-  <Future />
+<div class="layout">
+  <div class="top-row">
+    <Stats />
+    <Current />
+  </div>
+  <div class="full-row">
+    <Lower />
+  </div>
+  <div class="full-row">
+    <Upper />
+  </div>
 </div>
 
 <style>
   .bar {
-    border: 0.01px solid rgb(98, 101, 103);
-    border-radius: 3px;
-    width: 80vw;
-
-    margin: auto;
-    margin-top: 1vh;
-    margin-bottom: 15vh;
-    background-color: rgb(34, 38, 44);
-    color: rgb(107, 111, 121);
-    box-shadow:
-      0 4px 6px rgba(0, 0, 0, 0.2),
-      0 1px 3px rgba(0, 0, 0, 0.1);
-    display: flex;
-    justify-content: space-between;
-  }
-  .cards {
+    width: min(80vw, 1200px);
+    margin: 1vh auto 15vh;
+    padding: 0.5rem 1rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    max-width: 80vw;
-    margin-left: 5vw;
-    margin-right: 5vw;
-    margin: auto;
+    border: 1px solid var(--bar-border);
+    border-radius: 6px;
+    background-color: var(--bar-bg);
+    color: var(--bar-text);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  }
+
+  .layout {
+    max-width: min(80vw, 1200px);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .top-row {
+    display: flex;
+    gap: 1.25rem;
+    align-items: stretch;
+  }
+
+  .top-row > :global(*:first-child) {
+    flex: 0 1 35%;
+    min-width: 0;
+  }
+  .top-row > :global(*:last-child) {
+    flex: 0 1 65%;
+    min-width: 0;
+  }
+
+  .full-row {
+    display: flex;
+    width: 100%;
+  }
+
+  .full-row > :global(*) {
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  @media (max-width: 900px) {
+    .top-row {
+      flex-direction: column;
+    }
   }
 </style>

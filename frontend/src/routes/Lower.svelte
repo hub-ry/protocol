@@ -5,16 +5,14 @@
   let chartCanvas;
 
   onMount(async () => {
-    // Import Chart.js only in browser
     const { Chart } = await import("chart.js/auto");
     const zoomPlugin = await import("chartjs-plugin-zoom");
-
     Chart.register(zoomPlugin.default);
 
-    //const res = await fetch("http://localhost:5001/weights");
     const res = await fetch("http://100.89.197.38:5000/weights");
     weights = await res.json();
 
+    if (!chartCanvas) return;
     new Chart(chartCanvas, {
       type: "line",
       data: {
@@ -37,17 +35,10 @@
         plugins: {
           legend: { display: false },
           zoom: {
-            pan: {
-              enabled: true,
-              mode: "x",
-            },
+            pan: { enabled: true, mode: "x" },
             zoom: {
-              wheel: {
-                enabled: true,
-              },
-              pinch: {
-                enabled: true,
-              },
+              wheel: { enabled: true },
+              pinch: { enabled: true },
               mode: "x",
             },
           },
@@ -67,17 +58,17 @@
   });
 </script>
 
-<div class="current-box hover:brightness-110 transition">
+<div class="lower-box hover:brightness-110 transition">
   <div class="relative h-full p-4">
     <div class="h-[400px]">
       <canvas bind:this={chartCanvas}></canvas>
     </div>
-    <p class="absolute right-0 bottom-0 pr-2 text-gray-600">weight</p>
+    <p class="absolute right-0 bottom-0 pr-2 text-gray-600">Lower</p>
   </div>
 </div>
 
 <style>
-  .current-box {
+  .lower-box {
     flex: 1 1 340px;
     min-width: 280px;
     min-height: 60vh;
