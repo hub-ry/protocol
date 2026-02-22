@@ -28,8 +28,3 @@ Maybe One Day:
   - Apple Shortcuts (sending user data)
   - Tailscale + server (network tunnelling, receiving data)
   - Docker
-
----
-Personal Notes:
-
-``venv/bin/uvicorn src.main:app --host 0.0.0.0 --port 5000``
