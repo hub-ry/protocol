@@ -28,3 +28,5 @@ Maybe One Day:
   - Apple Shortcuts (sending user data)
   - Tailscale + server (network tunnelling, receiving data)
   - Docker
+
+for me to access: [http://100.89.197.38:5000/](http://100.89.197.38:5000/)
