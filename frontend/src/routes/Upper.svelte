@@ -11,7 +11,6 @@
 
     Chart.register(zoomPlugin.default);
 
-    //const res = await fetch("http://localhost:5001/weights");
     const res = await fetch("http://100.89.197.38:5000/weights");
     weights = await res.json();
 

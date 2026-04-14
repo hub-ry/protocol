@@ -8,6 +8,7 @@
   let currentTime = "";
   let userName = "";
   let mainView = "weight";
+  let goalWeight = 200;
 
   // hardcode for now bc i am the only user
   userName = "ryan";
@@ -31,14 +32,8 @@
 
 <div class="layout">
   <div class="top-row">
-    <Stats />
-    <Current />
-  </div>
-  <div class="full-row">
-    <Lower />
-  </div>
-  <div class="full-row">
-    <Upper />
+    <Stats bind:goalWeight />
+    <Current {goalWeight} />
   </div>
 </div>
 

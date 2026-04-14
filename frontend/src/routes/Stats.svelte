@@ -1,11 +1,14 @@
 <script>
   import { onMount } from "svelte";
 
+  export let goalWeight = 200;
+
   let weights = [];
   let firstDate = "Loading...";
   let currDate = "Loading...";
   let daysDifference = "Loading...";
-  let goalWeight = 188;
+  let editing = false;
+  let editValue = goalWeight;
 
   onMount(async () => {
     const res = await fetch("http://100.89.197.38:5000/weights");
@@ -18,12 +21,32 @@
       daysDifference = Math.floor((end - start) / (1000 * 60 * 60 * 24));
     }
   });
+
   $: latestWeight = weights[weights.length - 1];
+
+  function startEdit() {
+    editValue = goalWeight;
+    editing = true;
+  }
+
+  function commitEdit() {
+    const parsed = parseFloat(editValue);
+    if (!isNaN(parsed) && parsed > 0) goalWeight = parsed;
+    editing = false;
+  }
+
+  function onKeydown(e) {
+    if (e.key === "Enter") commitEdit();
+    if (e.key === "Escape") editing = false;
+  }
 </script>
 
 <div class="stats-box">
   <header class="stats-header">
     <h2 class="stats-title">Stats</h2>
+    <button class="edit-btn" on:click={startEdit} title="Edit goal weight">
+      Edit
+    </button>
   </header>
 
   <div class="stats-body">
@@ -48,11 +71,20 @@
       </div>
       <div class="stat-row">
         <dt class="stat-label">Goal weight</dt>
-        <dd class="stat-value">{goalWeight} <span class="stat-unit">lbs</span></dd>
-      </div>
-      <div class="stat-row">
-        <dt class="stat-label">Status</dt>
-        <dd class="stat-value stat-value--badge">Weight loss</dd>
+        <dd class="stat-value">
+          {#if editing}
+            <input
+              class="goal-input"
+              type="number"
+              bind:value={editValue}
+              on:blur={commitEdit}
+              on:keydown={onKeydown}
+              autofocus
+            />
+          {:else}
+            {goalWeight} <span class="stat-unit">lbs</span>
+          {/if}
+        </dd>
       </div>
     </dl>
   </div>
@@ -75,6 +107,9 @@
     padding: 0.875rem 1rem;
     border-bottom: 1px solid var(--card-border);
     background: rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
   .stats-title {
@@ -84,6 +119,25 @@
     letter-spacing: 0.05em;
     text-transform: uppercase;
     color: var(--label-muted);
+  }
+
+  .edit-btn {
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    border: 1px solid var(--card-border);
+    background: transparent;
+    color: var(--label-muted);
+    cursor: pointer;
+    transition:
+      background 0.15s,
+      color 0.15s;
+  }
+
+  .edit-btn:hover {
+    background: rgba(255, 255, 255, 0.07);
+    color: rgb(226, 232, 240);
   }
 
   .stats-body {
@@ -134,14 +188,26 @@
     color: rgb(234, 179, 8);
   }
 
-  .stat-value--badge {
-    font-size: 0.75rem;
-    color: rgb(134, 239, 172);
-  }
-
   .stat-unit {
     font-size: 0.75em;
     font-weight: 400;
     color: var(--label-muted);
+  }
+
+  .goal-input {
+    width: 5rem;
+    text-align: right;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    color: rgb(226, 232, 240);
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.1rem 0.4rem;
+    outline: none;
+  }
+
+  .goal-input:focus {
+    border-color: rgba(74, 144, 217, 0.6);
   }
 </style>
