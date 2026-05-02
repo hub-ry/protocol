@@ -1,8 +1,15 @@
-import tailwindcss from '@tailwindcss/vite';
-import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
-	base: '/protocol-demo/',
-	plugins: [tailwindcss(), sveltekit()]
+  plugins: [react()],
+  server: {
+    proxy: {
+      // In dev, /api/weights → http://localhost:8000/weights
+      "/api": {
+        target: "http://localhost:8000",
+        rewrite: (path) => path.replace(/^\/api/, ""),
+      },
+    },
+  },
 });

@@ -4,5 +4,15 @@ services:
     ports:
       - "8000:8000"
     volumes:
+      # Mount the local data/ folder into the container so the SQLite file
+      # survives container restarts and rebuilds.
       - ./data:/app/data
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - app
     restart: unless-stopped
