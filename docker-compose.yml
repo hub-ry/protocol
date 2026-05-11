@@ -1,18 +1,55 @@
 services:
-  app:
-    build: .
-    ports:
-      - "8000:8000"
-    volumes:
-      # Mount the local data/ folder into the container so the SQLite file
-      # survives container restarts and rebuilds.
-      - ./data:/app/data
-    restart: unless-stopped
 
-  frontend:
-    build: ./frontend
+  # --- PostgreSQL database ---
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: protocol
+      POSTGRES_PASSWORD: protocol
+      POSTGRES_DB: protocol
     ports:
-      - "3000:80"
+      - "5432:5432"   # exposed so you can inspect the DB locally with psql or a GUI
+    volumes:
+      - protocol_pg_data:/var/lib/postgresql/data   # data persists across restarts
+    # healthcheck polls `pg_isready` so other services can wait until the DB is
+    # actually accepting connections, not just started.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U protocol"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # --- FastAPI backend ---
+  app:
+    build:
+      context: .          # build context is the repo root (where Dockerfile lives)
+      dockerfile: Dockerfile
+    environment:
+      # "db" resolves to the db container's IP on Docker's internal network.
+      DATABASE_URL: postgresql://protocol:protocol@db:5432/protocol
+    ports:
+      - "8000:8000"   # exposed so iOS Shortcuts can hit the API directly if needed
+    volumes:
+      # Mount data/ read-only so import_weight.py can read weight.json inside the container.
+      # :ro means the container can't accidentally write to your data directory.
+      - ./data:/app/data:ro
+    depends_on:
+      db:
+        # Wait for the healthcheck to pass before starting — ensures PostgreSQL is ready.
+        condition: service_healthy
+
+  # --- React frontend (served by nginx) ---
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"   # the address you open in the browser
     depends_on:
       - app
-    restart: unless-stopped
+
+# Named volume — Docker manages where this lives on disk.
+# Your weight data survives `docker compose down` because of this.
+# `docker compose down -v` would delete it, so don't do that.
+volumes:
+  protocol_pg_data:

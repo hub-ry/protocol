@@ -1,37 +1,24 @@
+"""
+One-time script to seed the database with historical weight data from data/weight.json.
+
+Run after the app has started (so init_db() has created the tables):
+
+    docker compose exec app python src/import_weight.py
+
+Safe to re-run — existing rows are skipped, not duplicated.
+"""
+
 import json
 import os
-import sqlite3
-from contextlib import contextmanager
+from datetime import datetime
 
-DATA_DIR = "./data"
-DB_PATH = os.path.join(DATA_DIR, "life.db")
-JSON_PATH = os.path.join(DATA_DIR, "weight.json")
+import psycopg
 
-os.makedirs(DATA_DIR, exist_ok=True)
-
-
-@contextmanager
-def get_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    try:
-        yield conn
-        conn.commit()
-    finally:
-        conn.close()
-
-
-def init_db():
-    with get_db() as conn:
-        conn.executescript("""
-            CREATE TABLE IF NOT EXISTS weight (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                weight REAL NOT NULL,
-                date TEXT NOT NULL,
-                timestamp TEXT NOT NULL
-            );
-            CREATE INDEX IF NOT EXISTS idx_weight_date ON weight(date);
-        """)
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://protocol:protocol@localhost:5432/protocol",
+)
+JSON_PATH = "./data/weight.json"
 
 
 def import_weights():
@@ -41,14 +28,17 @@ def import_weights():
     imported = 0
     skipped = 0
 
-    with get_db() as conn:
+    # psycopg.connect() is the synchronous version — no async/await needed for a script.
+    # It works identically to AsyncConnection but blocks until each query completes,
+    # which is fine here since we're running this as a one-shot command, not a server.
+    with psycopg.connect(DATABASE_URL) as conn:
         for record in records:
             date = record["date"]
             weight = record["weight"]
 
-            # Check for an existing row with the same date and weight to avoid duplicates.
+            # Check for an existing row with the same date and weight before inserting.
             existing = conn.execute(
-                "SELECT id FROM weight WHERE date = ? AND weight = ?",
+                "SELECT id FROM weight WHERE date = %s AND weight = %s",
                 (date, weight),
             ).fetchone()
 
@@ -57,16 +47,16 @@ def import_weights():
                 continue
 
             # Use midnight on the record's date as the timestamp so ORDER BY timestamp
-            # gives the same chronological order as ORDER BY date.
+            # gives the same chronological order as ORDER BY date for historical imports.
+            timestamp = datetime.strptime(date, "%Y-%m-%d")
             conn.execute(
-                "INSERT INTO weight (weight, date, timestamp) VALUES (?, ?, ?)",
-                (weight, date, date + "T00:00:00"),
+                "INSERT INTO weight (weight, date, timestamp) VALUES (%s, %s, %s)",
+                (weight, date, timestamp),
             )
             imported += 1
 
-    print(f"Imported {imported}, skipped {skipped}")
+    print(f"Done — imported {imported}, skipped {skipped} duplicates")
 
 
 if __name__ == "__main__":
-    init_db()
     import_weights()
